@@ -1,7 +1,11 @@
 package index
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
+	"io"
+	"sort"
 	"strings"
 )
 
@@ -11,6 +15,34 @@ var (
 	// ErrNotInitlized 未初始化
 	ErrNotInitlized = errors.New("未初始化")
 )
+
+// BuildSimpleIndex 根据给定的数据建立索引
+func BuildSimpleIndex(r io.Reader) (Simple, error) {
+	simple := Simple{}
+	pos := 0
+
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		txt := scanner.Bytes()
+		key := string(txt[:bytes.IndexByte(txt, ',')])
+		simple = append(simple, &Item{
+			Key: key,
+			Len: int32(len(txt)),
+			Pos: int32(pos),
+		})
+		pos += len(txt)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	sort.Sort(simple)
+
+	return simple, nil
+}
 
 // Simple 简单的已排序数组索引
 type Simple []*Item
@@ -86,6 +118,18 @@ func binLike(s []*Item, si, ei int, k string) ([]*Item, error) {
 	}
 
 	return rt, nil
+}
+
+func (s Simple) Len() int {
+	return len(s)
+}
+
+func (s Simple) Less(i, j int) bool {
+	return strings.Compare(s[i].Key, s[j].Key) == -1
+}
+
+func (s Simple) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
 }
 
 var _ Interface = Simple(nil)

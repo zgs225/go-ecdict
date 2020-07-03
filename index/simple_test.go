@@ -55,7 +55,7 @@ func assertMatchKey(t *testing.T, is Simple, key string) {
 func getDictFilePath() string {
 	dict := os.Getenv("ECDICT")
 	if len(dict) == 0 {
-		dict = "/Users/lucky/Development/Other/ECDICT/ecdict.csv"
+		dict = os.ExpandEnv("$HOME/Development/Other/ECDICT/ecdict.csv")
 	}
 	return dict
 }
@@ -91,6 +91,7 @@ func Benchmark_Simple_Match(b *testing.B) {
 		"Nyamuragira", "Nyamwezi", "nyang",
 	}
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		k := keys[i%len(keys)]
 		i, err := is.Match(k)

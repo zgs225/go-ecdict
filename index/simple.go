@@ -12,33 +12,35 @@ import (
 var (
 	// ErrNil 未匹配给定的索引
 	ErrNil = errors.New("未匹配")
-	// ErrNotInitlized 未初始化
-	ErrNotInitlized = errors.New("未初始化")
+	// ErrNotInitialized 未初始化
+	ErrNotInitialized = errors.New("未初始化")
 )
 
+// ScanLinesEscapeDoubleQuotation 按换行符读取内容，但是忽视在双引号中的换行符
 func ScanLinesEscapeDoubleQuotation(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
 
-	i := 0
-	pos := -1
 	inDoubleQuotation := false
 
-	for {
-		b := data[i]
-
+	for i, b := range data {
 		if b == '"' {
-
+			inDoubleQuotation = !inDoubleQuotation
 		}
 
-		i += 1
+		if b == '\n' {
+			if !inDoubleQuotation {
+				return i + 1, data[0 : i+1], nil
+			}
+		}
 	}
 
 	if atEOF {
 		return len(data), data, nil
 	}
 
+	// require more data
 	return 0, nil, nil
 }
 
@@ -48,7 +50,7 @@ func BuildSimpleIndex(r io.Reader, ignore ...bool) (Simple, error) {
 	pos := 0
 
 	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
+	scanner.Split(ScanLinesEscapeDoubleQuotation)
 
 	for scanner.Scan() {
 		if len(ignore) > 0 && ignore[0] && pos == 0 {
@@ -81,7 +83,7 @@ type Simple []*Item
 // Match 查找指定 key 的索引，必须完全匹配
 func (s Simple) Match(k string) (*Item, error) {
 	if s == nil {
-		return nil, ErrNotInitlized
+		return nil, ErrNotInitialized
 	}
 
 	return binSearch(s, 0, len(s), k)
@@ -109,7 +111,7 @@ func binSearch(s []*Item, si, ei int, k string) (*Item, error) {
 // Like 使用最左匹配的原则匹配有 key 的所有索引
 func (s Simple) Like(k string) ([]*Item, error) {
 	if s == nil {
-		return nil, ErrNotInitlized
+		return nil, ErrNotInitialized
 	}
 
 	return binLike(s, 0, len(s), k)

@@ -10,7 +10,7 @@ import (
 func dictFile() string {
 	p := os.Getenv("EDICT")
 	if len(p) == 0 {
-		p = "/Users/lucky/Development/Other/ECDICT/ecdict.csv"
+		p = os.ExpandEnv("$HOME/Development/Other/ECDICT/ecdict.csv")
 	}
 	return p
 }
@@ -34,5 +34,38 @@ func TestDictMatch(t *testing.T) {
 	assert.Equal(t, 29682, r.Frq)
 	assert.Equal(t, "s:aesthetes", r.Exchange)
 
-	t.Log(r)
+	keys := []string{
+		"aburamycin", "aburamycin", "zymophosphate", "zymophyte", "zymoplasm", "zymoplastic", "wilfully", "wilfulness",
+		"wilga", "wilgus", "wilhelm", "vertin", "vertiplane", "vertiport", "vertisol", "vertisols", "vertisporin",
+		"unspotted", "unsprung", "unsqueeze", "unsqueezing", "two-bath chrome tannage", "two-beam", "two-bedroom", "two-bin system",
+		"two-bit", "two-blade propeller", "nyack", "nyad", "nyaff", "nyah", "nyah-nyah", "nyala", "nyam", "nyama", "nyamps",
+		"Nyamuragira", "Nyamwezi", "nyang",
+	}
+
+	for _, k := range keys {
+		r, err := dict.Match(k)
+		assert.NoError(t, err)
+		assert.Equal(t, k, r.Word)
+	}
+}
+
+func BenchmarkSimpleDict_Match(b *testing.B) {
+	dict, err := NewSimpleDict(dictFile())
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	keys := []string{
+		"aburamycin", "aburamycin", "zymophosphate", "zymophyte", "zymoplasm", "zymoplastic", "wilfully", "wilfulness",
+		"wilga", "wilgus", "wilhelm", "vertin", "vertiplane", "vertiport", "vertisol", "vertisols", "vertisporin",
+		"unspotted", "unsprung", "unsqueeze", "unsqueezing", "two-bath chrome tannage", "two-beam", "two-bedroom", "two-bin system",
+		"two-bit", "two-blade propeller", "nyack", "nyad", "nyaff", "nyah", "nyah-nyah", "nyala", "nyam", "nyama", "nyamps",
+		"Nyamuragira", "Nyamwezi", "nyang",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		k := keys[i%len(keys)]
+		dict.Match(k)
+	}
 }

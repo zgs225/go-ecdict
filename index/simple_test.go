@@ -3,6 +3,7 @@ package index
 import (
 	"bytes"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -101,5 +102,55 @@ func Benchmark_Simple_Match(b *testing.B) {
 		if i.Key != k {
 			b.Fatal(err)
 		}
+	}
+}
+
+func TestSimple_Like(t *testing.T) {
+	r := bytes.NewBuffer([]byte(text))
+	is, err := BuildSimpleIndex(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		k string
+	}
+	tests := []struct {
+		name    string
+		s       Simple
+		args    args
+		want    []*Item
+		wantErr bool
+	}{
+		{
+			name: "LikeShouldMatchManyIndexes",
+			args: args{
+				k: "bridgev",
+			},
+			s: is,
+			want: []*Item{
+				{
+					Key: "bridgeview",
+					Len: 59,
+					Pos: 1213,
+				},
+				{
+					Key: "bridgeville",
+					Len: 72,
+					Pos: 1272,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.s.Like(tt.args.k)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Simple.Like() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Simple.Like() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

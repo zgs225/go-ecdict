@@ -118,39 +118,55 @@ func (s Simple) Like(k string) ([]*Item, error) {
 }
 
 func binLike(s []*Item, si, ei int, k string) ([]*Item, error) {
-	if ei > si {
+	if si > ei {
 		return nil, ErrNil
 	}
-
-	rt := make([]*Item, 0)
 
 	i := (si + ei) / 2
 
 	if strings.HasPrefix(s[i].Key, k) {
-		rt = append(rt, s[i])
+		return walkLeftRight(s, k, i), nil
 	}
 
 	j := strings.Compare(s[i].Key, k)
 
 	if j == 1 {
-		v, err := binLike(s, si, i-1, k)
-		if err == nil {
-			return append(rt, v...), nil
-		}
+		return binLike(s, si, i-1, k)
 	}
 
 	if j == -1 {
-		v, err := binLike(s, i+1, ei, k)
-		if err == nil {
-			return append(rt, v...), nil
+		return binLike(s, i+1, ei, k)
+	}
+
+	return nil, ErrNil
+}
+
+func walkLeftRight(s []*Item, k string, i int) []*Item {
+	v := make([]*Item, 0)
+
+	if i > 0 {
+		for j := i - 1; j >= 0; j-- {
+			if strings.HasPrefix(s[j].Key, k) {
+				v = append(v, s[j])
+				continue
+			}
+			break
 		}
 	}
 
-	if len(rt) == 0 {
-		return nil, ErrNil
+	v = append(v, s[i])
+
+	if i < len(s)-1 {
+		for j := i + 1; j < len(s); j++ {
+			if strings.HasPrefix(s[j].Key, k) {
+				v = append(v, s[j])
+				continue
+			}
+			break
+		}
 	}
 
-	return rt, nil
+	return v
 }
 
 func (s Simple) Len() int {

@@ -52,15 +52,32 @@ func assertMatchKey(t *testing.T, is Simple, key string) {
 	}
 }
 
-func Benchmark_Simple_Match(b *testing.B) {
+func getDictFilePath() string {
 	dict := os.Getenv("ECDICT")
 	if len(dict) == 0 {
 		dict = "/Users/lucky/Development/Other/ECDICT/ecdict.csv"
 	}
-	f, err := os.Open(dict)
+	return dict
+}
+
+func Benchmark_Build_SimpleIndex(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		f, err := os.Open(getDictFilePath())
+		if err != nil {
+			b.Fatal(err)
+		}
+		if _, err := BuildSimpleIndex(f); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func Benchmark_Simple_Match(b *testing.B) {
+	f, err := os.Open(getDictFilePath())
 	if err != nil {
 		b.Fatal(err)
 	}
+
 	is, err := BuildSimpleIndex(f)
 	if err != nil {
 		b.Fatal(err)

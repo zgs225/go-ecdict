@@ -16,8 +16,34 @@ var (
 	ErrNotInitlized = errors.New("未初始化")
 )
 
+func ScanLinesEscapeDoubleQuotation(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	i := 0
+	pos := -1
+	inDoubleQuotation := false
+
+	for {
+		b := data[i]
+
+		if b == '"' {
+
+		}
+
+		i += 1
+	}
+
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	return 0, nil, nil
+}
+
 // BuildSimpleIndex 根据给定的数据建立索引
-func BuildSimpleIndex(r io.Reader) (Simple, error) {
+func BuildSimpleIndex(r io.Reader, ignore ...bool) (Simple, error) {
 	simple := Simple{}
 	pos := 0
 
@@ -25,6 +51,11 @@ func BuildSimpleIndex(r io.Reader) (Simple, error) {
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
+		if len(ignore) > 0 && ignore[0] && pos == 0 {
+			txt := scanner.Bytes()
+			pos += len(txt)
+			continue
+		}
 		txt := scanner.Bytes()
 		key := string(txt[:bytes.IndexByte(txt, ',')])
 		simple = append(simple, &Item{

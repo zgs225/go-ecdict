@@ -61,7 +61,7 @@ func getDictFilePath() string {
 	return dict
 }
 
-func Benchmark_Build_SimpleIndex(b *testing.B) {
+func Benchmark_BuildSimpleIndex(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		f, err := os.Open(getDictFilePath())
 		if err != nil {
@@ -73,7 +73,7 @@ func Benchmark_Build_SimpleIndex(b *testing.B) {
 	}
 }
 
-func Benchmark_Simple_Match(b *testing.B) {
+func BenchmarkSimple_Match(b *testing.B) {
 	f, err := os.Open(getDictFilePath())
 	if err != nil {
 		b.Fatal(err)
@@ -152,5 +152,31 @@ func TestSimple_Like(t *testing.T) {
 				t.Errorf("Simple.Like() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkSimple_Like(b *testing.B) {
+	f, err := os.Open(getDictFilePath())
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	is, err := BuildSimpleIndex(f)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	keys := []string{
+		"aburamycin", "aburamycin", "zymophosphate", "zymophyte", "zymoplasm", "zymoplastic", "wilfully", "wilfulness",
+		"wilga", "wilgus", "wilhelm", "vertin", "vertiplane", "vertiport", "vertisol", "vertisols", "vertisporin",
+		"unspotted", "unsprung", "unsqueeze", "unsqueezing", "two-bath chrome tannage", "two-beam", "two-bedroom", "two-bin system",
+		"two-bit", "two-blade propeller", "nyack", "nyad", "nyaff", "nyah", "nyah-nyah", "nyala", "nyam", "nyama", "nyamps",
+		"Nyamuragira", "Nyamwezi", "nyang",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		k := keys[i%len(keys)][:3]
+		is.Like(k)
 	}
 }

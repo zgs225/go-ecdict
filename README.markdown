@@ -16,6 +16,7 @@ import "github.com/zgs225/go-ecdict/dict"
 var dictFile string // 从 ECDICT 下载 ecdict.csv 文件的路径
 dict, err := dict.NewSimpleDict(dictFile)
 record, err := dict.Match("hello")
+records, err := dict.Like("hell)
 ```
 
 ### 查询结果结构体
@@ -43,3 +44,4 @@ type Record struct {
 | 名称 | 次数 | 平均耗时 | 平均内存占用 | 平均内存分配 |
 |--- |--- |--- |--- |--- |
 |BenchmarkSimpleDict_Match-4 |116396 |8676 ns/op |5154 B/op |14 allocs/o |
+|BenchmarkSimpleDict_Like_4Characters-8|1488|699324 ns/op|568970 B/op|1583 allocs/op |

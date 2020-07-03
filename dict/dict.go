@@ -55,6 +55,27 @@ func (d *SimpleDict) Match(k string) (*Record, error) {
 	return &r, nil
 }
 
+// Like 根据最左匹配原则获取满足条件的所有记录
+func (d *SimpleDict) Like(k string) ([]*Record, error) {
+	is, err := d.index.Like(k)
+	if err != nil {
+		return nil, err
+	}
+
+	v := make([]*Record, len(is))
+
+	// FIXME: 将连续的索引记录合并成一次文件读取
+	for i, idx := range is {
+		r := Record{}
+		if err = d.readRecordByIndex(&r, idx); err != nil {
+			return nil, err
+		}
+		v[i] = &r
+	}
+
+	return v, nil
+}
+
 func (d *SimpleDict) readRecordByIndex(r *Record, i *index.Item) error {
 	b := make([]byte, i.Len)
 	_, err := d.file.Seek(int64(i.Pos), io.SeekStart)

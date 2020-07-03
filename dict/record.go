@@ -1,6 +1,8 @@
 package dict
 
-import "encoding/json"
+import (
+	"fmt"
+)
 
 // Record 词典记录
 type Record struct {
@@ -20,6 +22,17 @@ type Record struct {
 }
 
 func (r Record) String() string {
-	b, _ := json.Marshal(r)
-	return string(b)
+	return fmt.Sprintf(`Record = {
+		Word = "%s",
+		Phonetic = "%s",
+		Definition = "%s",
+		Translation = "%s",
+		Pos = "%s",
+		Collins = "%s",
+		Oxford = "%s",
+		Tag = "%s",
+		Bnc = %d,
+		Frq = %d,
+		Exchange = "%s",
+}`, r.Word, r.Phonetic, r.Definition, r.Translation, r.Pos, r.Collins, r.Oxford, r.Tag, r.Bnc, r.Frq, r.Exchange)
 }

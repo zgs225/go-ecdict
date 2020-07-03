@@ -11,5 +11,5 @@ go-ecdict
 ## Benchmark
 
 | 名称 | 次数 | 平均耗时 | 平均内存占用 | 平均内存分配 |
-|:--- |:--- |:--- |:--- |:--- |:--- |
+|--- |--- |--- |--- |--- |
 |BenchmarkSimpleDict_Match-4 |116396 |8676 ns/op |5154 B/op |14 allocs/o |
